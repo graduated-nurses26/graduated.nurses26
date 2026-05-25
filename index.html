@@ -235,10 +235,11 @@
             const name = document.getElementById('nameInput').value.trim();
             if(!name) { alert('الرجاء كتابة الاسم أولاً!'); return; }
 
+            // نعتمد هنا على المقاسات الأصلية لـ bg.png أو 800x1130 كافتراضي ممتاز وثابت
             canvas.width = backgroundImage.width > 0 ? backgroundImage.width : 800;
             canvas.height = backgroundImage.height > 0 ? backgroundImage.height : 1130;
             
-            // 1. رسم الخلفية الأساسية أولاً
+            // 1. رسم الخلفية
             try {
                 ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
             } catch(e) {
@@ -246,40 +247,38 @@
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-            // 2. معالجة وقص الصورة الشخصية لتغطي الإطار بالكامل (Center Crop)
+            // 2. معالجة وقص الصورة الشخصية لتناسب الدائرة الذهبية تماماً (بالملي دون زيادة أو نقصان)
             if (uploadedUserImage) {
                 ctx.save();
-                // تحديد أبعاد دائرة الإطار بدقة
-                const circleRadius = canvas.width * 0.195; 
-                const circleX = canvas.width * 0.465;     
-                const circleY = canvas.height * 0.39;     
+                
+                // تحديد موقع وأبعاد الدائرة الذهبية بالتصميم بدقة تامة
+                const circleRadius = canvas.width * 0.187; // القطر الدقيق المتناسق مع الفراغ الداخلي لإطارك الذهبي
+                const circleX = canvas.width * 0.50;      // المنتصف الأفقي للبطاقة تماماً
+                const circleY = canvas.height * 0.342;    // الارتفاع العمودي المتناسق مع مكان الدائرة
 
-                // قص منطقة الرسم لتصبح دائرية
                 ctx.beginPath();
                 ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
                 ctx.closePath();
-                ctx.clip();
+                ctx.clip(); // قص مساحة الصورة لتصبح دائرية
 
                 const imgWidth = uploadedUserImage.width;
                 const imgHeight = uploadedUserImage.height;
-                
-                // زيادة قطر الرسم الفعلي بـ 2% للتأكد من تغطية أي حواف للإطار تماماً ومنع الفراغات الخلفية
-                const renderDiameter = (circleRadius * 2) * 1.02; 
+                const diameter = circleRadius * 2;
                 
                 let renderWidth, renderHeight, offsetX, offsetY;
                 const imageRatio = imgWidth / imgHeight;
 
                 if (imageRatio > 1) {
-                    // إذا كانت الصورة عريضة (Landscape)
-                    renderHeight = renderDiameter;
-                    renderWidth = renderDiameter * imageRatio;
+                    // إذا كانت الصورة عريضة
+                    renderHeight = diameter;
+                    renderWidth = diameter * imageRatio;
                     offsetX = circleX - (renderWidth / 2);
-                    offsetY = circleY - (renderDiameter / 2);
+                    offsetY = circleY - circleRadius;
                 } else {
-                    // إذا كانت الصورة طولية (Portrait) أو مربعة
-                    renderWidth = renderDiameter;
-                    renderHeight = renderDiameter / imageRatio;
-                    offsetX = circleX - (renderDiameter / 2);
+                    // إذا كانت الصورة طولية أو مربعة
+                    renderWidth = diameter;
+                    renderHeight = diameter / imageRatio;
+                    offsetX = circleX - circleRadius;
                     offsetY = circleY - (renderHeight / 2);
                 }
 
@@ -287,26 +286,25 @@
                 ctx.restore();
             }
 
-            // 3. كتابة الاسم في المكان المخصص تماماً (فوق جملة أحتفل بتخرجي من) وبدون خطوط
-            let fontSize = 38; 
-            const maxTextWidth = canvas.width * 0.60; 
+            // 3. كتابة الاسم داخل المستطيل الذهبي تماماً
+            let fontSize = 34; 
+            const maxTextWidth = canvas.width * 0.55; 
             ctx.font = `bold ${fontSize}px Tajawal`;
             let textWidth = ctx.measureText(name).width;
 
-            // تصغير حجم الخط تلقائياً إذا كان الاسم طويلاً جداً لحمايته من الخروج عن التصميم
-            while (textWidth > maxTextWidth && fontSize > 22) {
+            // تصغير حجم الخط آلياً لتفادي الخروج عن حدود المستطيل في الأسماء الطويلة
+            while (textWidth > maxTextWidth && fontSize > 20) {
                 fontSize -= 2; 
                 ctx.font = `bold ${fontSize}px Tajawal`;
                 textWidth = ctx.measureText(name).width;
             }
 
-            ctx.fillStyle = '#1b1b1b'; // لون الاسم متناسق مع التصميم
+            ctx.fillStyle = '#bfa15f'; // لون خط الاسم ذهبي داكن متناسق مع المستطيل، أو غيّره إلى '#1b1b1b' إذا كنت تفضل الأسود
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle'; 
+            ctx.textBaseline = 'middle'; // لجعل النص يتوسط المستطيل من الأعلى والأسفل بشكل مثالي
             
-            // إحداثيات المكان الفراغي المخصص للاسم فوق جملة "أحتفل بتخرجي من" وبمحاذاة مركزية تامة
-            const x = canvas.width * 0.465; 
-            const y = canvas.height * 0.575; // تم الرفع بدقة لتكون في المساحة الفارغة تماماً
+            const x = canvas.width * 0.50;  // السنتر الأفقي للبطاقة والمستطيل الذهبي
+            const y = canvas.height * 0.512; // الإحداثي العمودي لمنتصف المستطيل الذهبي تماماً
             
             ctx.fillText(name, x, y);
 
