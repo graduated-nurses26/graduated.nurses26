@@ -13,7 +13,7 @@
     
     <title>بطاقة التخرج - جامعة جازان</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
@@ -77,6 +77,7 @@
             transition: all 0.3s ease;
             box-sizing: border-box;
             text-align: center;
+            font-weight: 700;
         }
         input[type="text"]:focus {
             border-color: var(--accent-color);
@@ -93,7 +94,7 @@
             padding: 14px;
             border-radius: 14px;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -246,14 +247,14 @@
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-            // 2. معالجة وقص الصورة الشخصية لتطابق الدائرة الذهبية تماماً بالملي
+            // 2. معالجة وقص الصورة الشخصية ورفعها بعيداً عن مربع الاسم
             if (uploadedUserImage) {
                 ctx.save();
                 
-                // تعديل الحجم والموقع بناءً على المعاينة الأخيرة لتتطابق مع الدائرة الذهبية تماماً
-                const circleRadius = canvas.width * 0.198; // زيادة نصف القطر لتملأ كامل الدائرة الذهبية المفرغة
-                const circleX = canvas.width * 0.50;      // التوسط الأفقي الكامل
-                const circleY = canvas.height * 0.334;    // رفع الصورة للأعلى قليلاً لتجلس في سنتر الدائرة تماماً
+                // تعديلات دقيقة لرفع الصورة ووضعها داخل إطارها الذهبي بالملي
+                const circleRadius = canvas.width * 0.183; 
+                const circleX = canvas.width * 0.50;      
+                const circleY = canvas.height * 0.320; 
 
                 ctx.beginPath();
                 ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
@@ -283,20 +284,19 @@
                 ctx.restore();
             }
 
-            // 3. كتابة الاسم داخل المستطيل الذهبي وتكبير حجم الخط
-            let fontSize = 48; // تم تكبير الخط من 34 إلى 48 ليكون واضحاً ومالئاً للمستطيل
+            // 3. كتابة الاسم داخل المستطيل الذهبي بخط عريض (Bold) وحجم كبير 52 ولون ذهبي
+            let fontSize = 52; 
             const maxTextWidth = canvas.width * 0.55; 
-            ctx.font = `bold ${fontSize}px Tajawal`;
+            ctx.font = `900 ${fontSize}px 'Tajawal', sans-serif`; 
             let textWidth = ctx.measureText(name).width;
 
-            // تصغير الخط تلقائياً فقط إذا كان الاسم طويلاً جداً لكي لا يخرج عن حدود المستطيل
-            while (textWidth > maxTextWidth && fontSize > 24) {
+            while (textWidth > maxTextWidth && fontSize > 28) {
                 fontSize -= 2; 
-                ctx.font = `bold ${fontSize}px Tajawal`;
+                ctx.font = `900 ${fontSize}px 'Tajawal', sans-serif`;
                 textWidth = ctx.measureText(name).width;
             }
 
-            ctx.fillStyle = '#bfa15f'; // اللون الذهبي المتناسق، يمكنك تغييره لـ '#1b1b1b' إذا رغبت باللون الأسود
+            ctx.fillStyle = '#bfa15f'; // تم إرجاع اللون للذهبي المتناسق مع التصميم بناءً على طلبك
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle'; 
             
