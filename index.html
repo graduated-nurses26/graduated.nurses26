@@ -238,7 +238,7 @@
             canvas.width = backgroundImage.width > 0 ? backgroundImage.width : 800;
             canvas.height = backgroundImage.height > 0 ? backgroundImage.height : 1130;
             
-            // 1. رسم الخلفية
+            // 1. رسم الخلفية الأساسية أولاً
             try {
                 ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
             } catch(e) {
@@ -246,37 +246,40 @@
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-            // 2. معالجة ورسم الصورة الشخصية داخل الدائرة (مع التوسيط واقتصاص الأطراف الزائدة ذكياً)
+            // 2. معالجة وقص الصورة الشخصية لتغطي الإطار بالكامل (Center Crop)
             if (uploadedUserImage) {
                 ctx.save();
+                // تحديد أبعاد دائرة الإطار بدقة
                 const circleRadius = canvas.width * 0.195; 
                 const circleX = canvas.width * 0.465;     
                 const circleY = canvas.height * 0.39;     
 
+                // قص منطقة الرسم لتصبح دائرية
                 ctx.beginPath();
                 ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
                 ctx.closePath();
                 ctx.clip();
 
-                // حساب الأبعاد المناسبة لقص الصورة من المنتصف (Center-Crop) لملء الدائرة بالكامل
                 const imgWidth = uploadedUserImage.width;
                 const imgHeight = uploadedUserImage.height;
-                const diameter = circleRadius * 2;
+                
+                // زيادة قطر الرسم الفعلي بـ 2% للتأكد من تغطية أي حواف للإطار تماماً ومنع الفراغات الخلفية
+                const renderDiameter = (circleRadius * 2) * 1.02; 
                 
                 let renderWidth, renderHeight, offsetX, offsetY;
                 const imageRatio = imgWidth / imgHeight;
 
                 if (imageRatio > 1) {
-                    // الصورة عريضة
-                    renderHeight = diameter;
-                    renderWidth = diameter * imageRatio;
+                    // إذا كانت الصورة عريضة (Landscape)
+                    renderHeight = renderDiameter;
+                    renderWidth = renderDiameter * imageRatio;
                     offsetX = circleX - (renderWidth / 2);
-                    offsetY = circleY - circleRadius;
+                    offsetY = circleY - (renderDiameter / 2);
                 } else {
-                    // الصورة طولية أو مربعة
-                    renderWidth = diameter;
-                    renderHeight = diameter / imageRatio;
-                    offsetX = circleX - circleRadius;
+                    // إذا كانت الصورة طولية (Portrait) أو مربعة
+                    renderWidth = renderDiameter;
+                    renderHeight = renderDiameter / imageRatio;
+                    offsetX = circleX - (renderDiameter / 2);
                     offsetY = circleY - (renderHeight / 2);
                 }
 
@@ -284,24 +287,26 @@
                 ctx.restore();
             }
 
-            // 3. كتابة الاسم (تم رفع الإحداثيات للأعلى لعدم التداخل وتغيير الـ Baseline)
-            let fontSize = 36; 
-            const maxTextWidth = canvas.width * 0.55; 
+            // 3. كتابة الاسم في المكان المخصص تماماً (فوق جملة أحتفل بتخرجي من) وبدون خطوط
+            let fontSize = 38; 
+            const maxTextWidth = canvas.width * 0.60; 
             ctx.font = `bold ${fontSize}px Tajawal`;
             let textWidth = ctx.measureText(name).width;
 
-            while (textWidth > maxTextWidth && fontSize > 20) {
+            // تصغير حجم الخط تلقائياً إذا كان الاسم طويلاً جداً لحمايته من الخروج عن التصميم
+            while (textWidth > maxTextWidth && fontSize > 22) {
                 fontSize -= 2; 
                 ctx.font = `bold ${fontSize}px Tajawal`;
                 textWidth = ctx.measureText(name).width;
             }
 
-            ctx.fillStyle = '#1b1b1b'; 
+            ctx.fillStyle = '#1b1b1b'; // لون الاسم متناسق مع التصميم
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle'; // تغيير خط الأساس لتوسيط النص بشكل أفضل
+            ctx.textBaseline = 'middle'; 
             
-            const x = canvas.width * 0.465; // محاذاة أفقية متناسقة مع مركز الدائرة
-            const y = canvas.height * 0.605; // تم رفعها من 0.635 إلى 0.605 لتكون أعلى الفراغ تماماً
+            // إحداثيات المكان الفراغي المخصص للاسم فوق جملة "أحتفل بتخرجي من" وبمحاذاة مركزية تامة
+            const x = canvas.width * 0.465; 
+            const y = canvas.height * 0.575; // تم الرفع بدقة لتكون في المساحة الفارغة تماماً
             
             ctx.fillText(name, x, y);
 
