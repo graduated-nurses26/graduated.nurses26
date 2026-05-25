@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta property="og:title" content="بطاقة تهنئة التخرج - جامعة جازان">
+    <meta property="og:description" content="أصدر بطاقة تخرجك المخصصة باسمك وصورتك وشاركها مع من تحب.">
+    <meta property="og:image" content="bg.png">
+    <meta property="og:type" content="website">
+    
+    <link rel="icon" href="bg.png" type="image/png">
+    
+    <title>بطاقة التخرج - جامعة جازان</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #112d4e; 
+            --accent-color: #bfa15f;  
+            --success-color: #28a745;
+            --share-color: #8e44ad;
+            --copy-color: #e67e22;
+            --glass-bg: rgba(255, 255, 255, 0.82);
+            --glass-border: rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(rgba(245, 247, 250, 0.85), rgba(245, 247, 250, 0.85)), url('bg.png') no-repeat center center fixed;
+            background-size: cover;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #f7f9fc;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+        .loader-pulse {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            animation: pulse-text 1.5s infinite ease-in-out;
+            margin-bottom: 15px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(17, 45, 78, 0.1);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+        @keyframes pulse-text {
+            0%, 100% { transform: scale(0.98); opacity: 0.6; }
+            50% { transform: scale(1.02); opacity: 1; }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            padding: 35px 20px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            animation: containerFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            box-sizing: border-box;
+        }
+        @keyframes containerFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-family: 'Tajawal', sans-serif;
+            border: 2px solid rgba(17, 45, 78, 0.15);
+            border-radius: 14px;
+            margin-bottom: 15px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        input[type="text"]:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(191, 161, 95, 0.25);
+            background: #ffffff;
+        }
+
+        .file-upload-wrapper {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .file-upload-btn {
+            background: #ffffff;
+            border: 2px dashed rgba(191, 161, 95, 0.5);
+            color: var(--primary-color);
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .file-upload-btn:hover {
+            border-color: var(--accent-color);
+            background: rgba(191, 161, 95, 0.05);
+        }
+        #imageInput {
+            display: none;
+        }
+        .file-status {
+            font-size: 12px;
+            color: #28a745;
+            margin-top: 5px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+        
+        .buttons-grid.two-cols {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        button {
+            border: none;
+            padding: 14px 10px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Tajawal', sans-serif;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+        button:active { transform: translateY(1px); }
+
+        .btn-primary { background-color: var(--primary-color); font-size: 18px; padding: 15px; }
+        .btn-primary:hover { background-color: var(--accent-color); }
+        
+        .btn-success { background-color: var(--success-color); }
+        .btn-share { background-color: var(--share-color); }
+        .btn-copy { background-color: var(--copy-color); }
+        .btn-secondary { background-color: #6c757d; }
+
+        .pulse-anim {
+            animation: pulse-button 2s infinite;
+        }
+        @keyframes pulse-button {
+            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+        .btn-share.pulse-anim { animation-name: pulse-share; }
+        @keyframes pulse-share {
+            0% { box-shadow: 0 0 0 0 rgba(142, 68, 173, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(142, 68, 173, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(142, 68, 173, 0); }
+        }
+
+        .tilt-wrapper {
+            perspective: 1000px;
+            margin: 15px 0 25px 0;
+            display: inline-block;
+            width: 100%;
+        }
+        canvas {
+            width: 100%;
+            height: auto;
+            border-radius: 18px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+            transition: transform 0.1s ease-out;
+            transform-style: preserve-3d;
+        }
+
+        #resultPage { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="loader-pulse">جامعة جازان - الدفعة 21</div>
+        <div class="spinner"></div>
+    </div>
+
+    <div id="inputPage" class="container">
+        <h2>أصدر بطاقة التخرج الخاصة بك</h2>
+        <input type="text" id="nameInput" placeholder="اكتب اسم الخريج / الخريجة هنا..." maxlength="40">
+        
+        <div class="file-upload-wrapper">
+            <label for="imageInput" class="file-upload-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                أضف صورتك الشخصية (اختياري)
+            </label>
+            <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
+            <div id="fileStatus" class="file-status">✓ تم رفع الصورة بنجاح</div>
+        </div>
+
+        <button class="btn-primary" onclick="generateCard()">إنشاء بطاقة التخرج</button>
+    </div>
+
+    <div id="resultPage" class="container">
+        <h2>مبروك التخرج! 🎓</h2>
+        
+        <div class="tilt-wrapper" id="tiltContainer">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="buttons-grid two-cols">
+            <button class="btn-share pulse-anim" onclick="shareCard()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                مشاركة
+            </button>
+            <button class="btn-success pulse-anim" onclick="downloadImage()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                تحميل
+            </button>
+        </div>
+        
+        <div class="buttons-grid" style="margin-top: 12px;">
+            <button class="btn-copy" onclick="copyGreetingText()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                نسخ نص تهنئة التخرج
+            </button>
+            <button class="btn-secondary" onclick="goBack()">تعديل البيانات</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const backgroundImage = new Image();
+        backgroundImage.src = 'bg.png'; 
+
+        let imageLoaded = false;
+        let uploadedUserImage = null;
+
+        backgroundImage.onload = function() {
+            imageLoaded = true;
+            document.getElementById('loader').style.opacity = '0';
+            setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 500);
+        };
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedUserImage = new Image();
+                    uploadedUserImage.onload = function() {
+                        document.getElementById('fileStatus').style.display = 'block';
+                    };
+                    uploadedUserImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function generateCard() {
+            if (!imageLoaded) { alert('جاري تحميل التصميم...'); return; }
+            const name = document.getElementById('nameInput').value.trim();
+            if(!name) { alert('الرجاء كتابة الاسم أولاً!'); return; }
+
+            canvas.width = backgroundImage.width;
+            canvas.height = backgroundImage.height;
+            
+            // 1. رسم الصورة الخلفية الأصلية
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
+            // 2. إذا تم رفع صورة، يتم رسمها داخل الدائرة (السحاب والعشب) بدقة
+            if (uploadedUserImage) {
+                ctx.save();
+                
+                // حسابات التموضع الدائري بناءً على أبعاد كروت التهنئة الطولية القياسية
+                // الدائرة تقع في منتصف العرض تقريباً في النصف العلوي للبطاقة
+                const circleRadius = canvas.width * 0.195; // نصف قطر الدائرة متناسق مع الإطار
+                const circleX = canvas.width * 0.465;     // نقطة المنتصف الأفقي للدائرة
+                const circleY = canvas.height * 0.39;     // نقطة المنتصف العمودي للدائرة
+
+                ctx.beginPath();
+                ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.clip();
+
+                // رسم الصورة الشخصية لتملأ الدائرة بالكامل بشكل نظيف
+                ctx.drawImage(uploadedUserImage, circleX - circleRadius, circleY - circleRadius, circleRadius * 2, circleRadius * 2);
+                ctx.restore();
+            }
+
+            // 3. كتابة الاسم فوق الخط الأسود تماماً
+            let fontSize = 38; // حجم خط مثالي وأنيق
+            const maxTextWidth = canvas.width * 0.55; 
+            ctx.font = `bold ${fontSize}px Tajawal`;
+            let textWidth = ctx.measureText(name).width;
+
+            while (textWidth > maxTextWidth && fontSize > 20) {
+                fontSize -= 2; 
+                ctx.font = `bold ${fontSize}px Tajawal`;
+                textWidth = ctx.measureText(name).width;
+            }
+
+            // لون كحلي فاخر ومطابق لخطوط البطاقة الأصلية
+            ctx.fillStyle = '#1b1b1b'; 
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            
+            // تحديد موقع الخط الأسود بدقة (فوق جملة أحتفل بتخرجي من)
+            const x = canvas.width * 0.455;
+            const y = canvas.height * 0.635; // الإحداثي الدقيق فوق الخط الأسود مباشرة
+            
+            ctx.fillText(name, x, y);
+
+            document.getElementById('inputPage').style.display = 'none';
+            document.getElementById('resultPage').style.display = 'block';
+
+            playPopSound();
+            fireworks();
+        }
+
+        function playPopSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc1 = audioCtx.createOscillator();
+                let gain1 = audioCtx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(160, audioCtx.currentTime);
+                osc1.frequency.exponentialRampToValueAtTime(380, audioCtx.currentTime + 0.12);
+                gain1.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+                osc1.start(); osc1.stop(audioCtx.currentTime + 0.15);
+            } catch(e) {}
+        }
+
+        function fireworks() {
+            var duration = 3 * 1000; 
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 28, spread: 360, ticks: 60, zIndex: 10 };
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                var particleCount = 45 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random() * 0.2 + 0.15, y: 0.95 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random() * 0.2 + 0.65, y: 0.95 } }));
+            }, 260);
+        }
+
+        async function shareCard() {
+            if (navigator.share) {
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], 'Jazan_Graduation.png', { type: 'image/png' });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'بطاقة تخرج جامعة جازان',
+                                text: 'الحمد لله على تمام الرحلة وبداية الحلم! 🎓✨'
+                            });
+                        } catch (err) { console.log('Share canceled or failed'); }
+                    } else {
+                        alert("عذراً، متصفحك لا يدعم المشاركة المباشرة للصور. يرجى استخدام زر التحميل.");
+                    }
+                });
+            } else {
+                alert("عذراً، جهازك لا يدعم المشاركة المباشرة. يرجى استخدام زر التحميل.");
+            }
+        }
+
+        function copyGreetingText() {
+            const userName = document.getElementById('nameInput').value.trim();
+            const textToCopy = `أحتفل بتخرجي من كلية التمريض والعلوم الصحية بجامعة جازان - الدفعة 21. سنوات من السعي والتعب والدعوات أصبحت اليوم حقيقة أعيشها بكل اعتزاز، وأبدأ بإذن الله مرحلة جديدة أحمل فيها رسالة التمريض بعلم ورحمة وإنسانية.\n\nالخريج/ة: ${userName}`;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("تم نسخ نص التهنئة بنجاح!");
+            }).catch(err => {
+                alert("عذراً، حدث خطأ أثناء النسخ.");
+            });
+        }
+
+        const tiltContainer = document.getElementById('tiltContainer');
+        tiltContainer.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const xc = rect.width / 2;
+            const yc = rect.height / 2;
+            canvas.style.transform = `rotateX(${(yc - y) / 12}deg) rotateY(${(x - xc) / 12}deg) scale(1.02)`;
+        });
+        tiltContainer.addEventListener('mouseleave', () => {
+            canvas.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+        });
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'بطاقة_تخرج_جامعة_جازان.png'; 
+            link.href = canvas.toDataURL('image/png', 1.0); 
+            link.click();
+        }
+
+        function goBack() {
+            document.getElementById('resultPage').style.display = 'none';
+            document.getElementById('inputPage').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
